@@ -17,3 +17,4 @@ Resources:
 1. Pseudolabel - https://github.com/iBelieveCJM/pseudo_label-pytorch/blob/master/main.py
 2. CIFAR-10 with Torch - https://github.com/kuangliu/pytorch-cifar
 3. Wide ResNets - https://github.com/szagoruyko/wide-residual-networks
+4. VAT - https://github.com/lyakaap/VAT-pytorch
