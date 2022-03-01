@@ -3,7 +3,7 @@ Name: Nirav Shenoy <br>
 MatrikelNummer: 7023854 <br>
 Email: nish00002@uni-saarland.de <br>
   
-Name: Geo James <br>
+Name: Madukkolil Geo James <br>
 MatrikelNummer: 7008978 <br>
 Email: maja00001@uni-saarland.de <br>
 
