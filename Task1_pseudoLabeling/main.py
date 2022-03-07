@@ -49,6 +49,9 @@ def main(args):
     # TODO: SUPPLY your code
     ############################################################################
 
+    init_path = os.path.join(curr_path,'init_model.pt')
+    torch.save(model.state_dict(), init_path)
+
     def save_checkpoint(checkpoint, best_path):
         print('Saving model')
         torch.save(checkpoint, best_path)
@@ -57,9 +60,10 @@ def main(args):
     optimizer = optim.SGD(params = model.parameters(), lr=args.lr,
                       momentum=args.momentum, weight_decay=args.wd)
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
-    threshold_list = [0.95, 0.75, 0.6]
+    threshold_list = [0.6, 0.75, 0.95]
     
     for threshold in threshold_list:
+        model = torch.load_state_dict(init_path)
         best_loss = float('inf')
         best_path = os.path.join(curr_path,'best_model' + str(int(threshold*100)) + '.pt')
         for epoch in range(args.epoch):
@@ -163,6 +167,7 @@ def main(args):
                     checkpoint = {
                         'threshold': threshold,
                         'validation_loss': test_loss,
+                        'validation_accuracy': test_accuracy,
                         'state_dict': model.state_dict(),
                     }
                     save_checkpoint(checkpoint, best_path)
@@ -182,6 +187,8 @@ if __name__ == "__main__":
                                         of CIFAR10/100 with pytorch")
     parser.add_argument("--dataset", default="cifar10", 
                         type=str, choices=["cifar10", "cifar100"])
+    # parser.add_argument("--dataset", default="cifar100", 
+    #                     type=str, choices=["cifar10", "cifar100"])
     parser.add_argument("--datapath", default="./data/", 
                         type=str, help="Path to the CIFAR-10/100 dataset")
     # parser.add_argument('--num-labeled', type=int, 
@@ -204,7 +211,7 @@ if __name__ == "__main__":
                         help='train batchsize')
     parser.add_argument('--test-batch', default=64, type=int,
                         help='train batchsize')
-    parser.add_argument('--total-iter', default=1024*10, type=int,
+    parser.add_argument('--total-iter', default=1024*100, type=int,
                         help='total number of iterations to run')
     parser.add_argument('--iter-per-epoch', default=1024, type=int,
                         help="Number of iterations to run per epoch")
@@ -216,9 +223,9 @@ if __name__ == "__main__":
                         help='Confidence Threshold for pseudo labeling')
     parser.add_argument("--dataout", type=str, default="./path/to/output/",
                         help="Path to save log files")
-    parser.add_argument("--model-depth", type=int, default=28,
+    parser.add_argument("--model-depth", type=int, default=16,
                         help="model depth for wide resnet") 
-    parser.add_argument("--model-width", type=int, default=2,
+    parser.add_argument("--model-width", type=int, default=8,
                         help="model width for wide resnet")
     
     # Add more arguments if you need them
