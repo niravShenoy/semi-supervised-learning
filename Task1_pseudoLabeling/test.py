@@ -1,8 +1,15 @@
+import logging
+import os
+
 import torch
 from dataloader import get_cifar10, get_cifar100
 from model.wrn import WideResNet
 import torch.nn as nn
 from utils import accuracy
+
+curr_path = os.path.dirname(os.path.abspath(__file__))
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s',
+#                     datefmt='%a, %d %b %Y %H:%M:%S', filename=os.path.join(curr_path, 'out.task1.log'), filemode='w')
 
 def test_cifar10(args, device, testdataset, filepath = "./path/to/model.pth.tar"):
     '''
@@ -74,7 +81,7 @@ def evaluate_model(model, test_loader, criterion, device):
         test_accuracy = 100 * correct.float() / len(test_loader.dataset)
         test_loss = test_loss / j
 
-        print("Test Accuracy: {:.3f}, Test Loss: {:.3f}".format( 
+        logging.info("Test Accuracy: %.3f, Test Loss: %.3f", 
             test_accuracy, 
             test_loss
-        ))
+        )
