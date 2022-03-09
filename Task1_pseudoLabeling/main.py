@@ -9,6 +9,7 @@ import logging
 from dataloader import get_cifar10, get_cifar100
 from test import test_cifar10, test_cifar100
 from utils import accuracy
+from test import load_checkpoint
 
 from model.wrn import WideResNet
 
@@ -20,6 +21,7 @@ from torch.utils.data import DataLoader
 curr_path = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s',
                     datefmt='%a, %d %b %Y %H:%M:%S', filename=os.path.join(curr_path, 'out.task1.log'))
+
 
 def main(args):
     if args.dataset == "cifar10":
@@ -48,36 +50,61 @@ def main(args):
                              num_workers=args.num_workers)
 
     model = WideResNet(args.model_depth,
-                       args.num_classes, widen_factor=args.model_width)
+                       args.num_classes, widen_factor=args.model_width, dropRate=0.25)
     model = model.to(device)
 
     ############################################################################
     # TODO: SUPPLY your code
     ############################################################################
 
+    logging.info('%s; Num Labeled = %s; Epochs = %s; LR = %s; Momentum = %s; wd = %s',
+                 args.dataset, args.num_labeled, args.epoch, args.lr, args.momentum, args.wd)
+
     init_path = os.path.join(curr_path, 'init_model.pt')
     torch.save(model.state_dict(), init_path)
 
     def save_checkpoint(checkpoint, best_path):
         logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
-                    checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
+                     checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
         torch.save(checkpoint, best_path)
 
     criterion = nn.CrossEntropyLoss()
-    
-    #threshold_list = [0.6, 0.75, 0.95]
-    threshold_list = [0.6]
+
+    def find_model_accuracy(model, test_loader):
+        _, model = load_checkpoint(path, model)
+        with torch.no_grad():
+            model.eval()
+
+            test_accuracy = torch.empty((0,2))
+            for j, (x_v, y_v) in enumerate(test_loader):
+                x_v, y_v = x_v.to(device), y_v.to(device)
+                y_op_val = model(x_v)
+                res = accuracy(y_op_val, y_v, (1,5))
+                res = torch.FloatTensor(res).reshape(1,2)
+                test_accuracy = torch.cat((test_accuracy, res),0)
+                # loss = criterion(y_op_val, y_v)
+            top1, topk = enumerate(torch.div(torch.sum(test_accuracy, dim=0),test_accuracy.shape[0]))
+            print(top1, topk)
+            return top1, topk
+
+    # path = os.path.join(curr_path,'best_model','cifar10-250','best_model95.pt')
+    # top1, topk = find_model_accuracy(model, test_loader)
+    # exit()
+
+    threshold_list = [0.6, 0.75, 0.95]
+    #threshold_list = [0.75, 0.95]
 
     for threshold in threshold_list:
         model.load_state_dict(torch.load(init_path))
         optimizer = optim.SGD(params=model.parameters(), lr=args.lr,
                               momentum=args.momentum, weight_decay=args.wd)
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [25,40])
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, factor=0.2, patience=7)
         best_loss = float('inf')
         best_path = os.path.join(
             curr_path, 'best_model' + str(int(threshold*100)) + '.pt')
         logging.info('Model Parameters for threshold %s',
-                    threshold)
+                     threshold)
         loss_list = []
         for epoch in range(args.epoch):
             model.train()
@@ -150,7 +177,7 @@ def main(args):
                         y_pseudo_set.append(y_pseudo_label_class[k])
                 # End of batch
 
-            accuracy = 100 * correct / total
+            train_accuracy = 100 * correct / total
             running_loss /= args.iter_per_epoch
             loss_list.append(running_loss)
 
@@ -171,13 +198,13 @@ def main(args):
                 test_loss = test_loss / j
 
                 logging.info("Epoch %s/%s, Train Accuracy: %.3f, Test Accuracy: %.3f, Training Loss: %.3f, Test Loss: %.3f",
-                    epoch+1,
-                    args.epoch,
-                    accuracy.item(),
-                    test_accuracy,
-                    running_loss,
-                    test_loss
-                )
+                             epoch+1,
+                             args.epoch,
+                             train_accuracy.item(),
+                             test_accuracy,
+                             running_loss,
+                             test_loss
+                             )
 
                 if test_loss < best_loss:
                     best_loss = test_loss
@@ -189,21 +216,21 @@ def main(args):
                         'state_dict': model.state_dict(),
                     }
                     save_checkpoint(checkpoint, best_path)
-            scheduler.step()
+            scheduler.step(test_loss)
             print("Epoch {}/{}, Train Accuracy: {:.3f}, Test Accuracy: {:.3f}, Training Loss: {:.3f}, Test Loss: {:.3f}".format(
-                    epoch+1,
-                    args.epoch,
-                    accuracy.item(),
-                    test_accuracy,
-                    running_loss,
-                    test_loss
-                ))
+                epoch+1,
+                args.epoch,
+                train_accuracy.item(),
+                test_accuracy,
+                running_loss,
+                test_loss
+            ))
 
         logging.info('Training Complete...')
 
         # plt.plot(loss_list)
         # loss_function = os.path.join(
-            # curr_path, 'loss' + str(int(threshold*100)) + '.png')
+        # curr_path, 'loss' + str(int(threshold*100)) + '.png')
         # plt.savefig(loss_function)
         # plt.close()
         # Model Evaluation
@@ -218,22 +245,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Pseudo labeling \
                                         of CIFAR10/100 with pytorch")
     parser.add_argument("--dataset", default="cifar10",
-                        type=str, choices=["cifar10", "cifar100"])
+                       type=str, choices=["cifar10", "cifar100"])
     # parser.add_argument("--dataset", default="cifar100",
     #                     type=str, choices=["cifar10", "cifar100"])
     parser.add_argument("--datapath", default="./data/",
                         type=str, help="Path to the CIFAR-10/100 dataset")
     # parser.add_argument('--num-labeled', type=int,
-    #                     default=250, help='Total number of labeled samples')
+    #                     default=2500, help='Total number of labeled samples')
     parser.add_argument('--num-labeled', type=int,
-                        default=4000, help='Total number of labeled samples')
+                        default=10000, help='Total number of labeled samples')
     parser.add_argument("--lr", default=0.1, type=float,
                         help="The initial learning rate")
     # parser.add_argument("--lr", default=0.1, type=float,
     #                     help="The initial learning rate")
     parser.add_argument("--momentum", default=0.9, type=float,
                         help="Optimizer momentum")
-    parser.add_argument("--wd", default=0.0001, type=float,
+    parser.add_argument("--wd", default=0.0005, type=float,
                         help="Weight decay")
 #   parser.add_argument("--wd", default=0.0001, type=float,
 #                       help="Weight decay")
@@ -243,7 +270,7 @@ if __name__ == "__main__":
                         help='train batchsize')
     parser.add_argument('--test-batch', default=64, type=int,
                         help='train batchsize')
-    parser.add_argument('--total-iter', default=1024*1, type=int,
+    parser.add_argument('--total-iter', default=1024*100, type=int,
                         help='total number of iterations to run')
     parser.add_argument('--iter-per-epoch', default=1024, type=int,
                         help="Number of iterations to run per epoch")
