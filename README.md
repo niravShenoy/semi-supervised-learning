@@ -22,3 +22,4 @@ Resources:
 6. Example code - https://github.com/karpathy/minGPT
 7. FixMatch - https://github.com/google-research/fixmatch/blob/master/fixmatch.py
 8. ScienceDirect - https://www.sciencedirect.com/science/article/pii/S2405959519300694![image](https://user-images.githubusercontent.com/24589333/157223285-9d3de64e-1f68-42ba-ac8c-b95336d33bbd.png)
+9. FixMatch1 - https://github.com/LeeDoYup/FixMatch-pytorch
