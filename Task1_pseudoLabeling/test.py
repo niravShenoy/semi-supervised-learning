@@ -8,8 +8,6 @@ import torch.nn as nn
 from utils import accuracy
 
 curr_path = os.path.dirname(os.path.abspath(__file__))
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s',
-#                     datefmt='%a, %d %b %Y %H:%M:%S', filename=os.path.join(curr_path, 'out.task1.log'), filemode='w')
 
 def test_cifar10(args, device, testdataset, filepath = "./path/to/model.pth.tar"):
     '''
