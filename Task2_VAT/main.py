@@ -1,5 +1,7 @@
 import argparse
 import math
+import logging
+import os
 
 from dataloader import get_cifar10, get_cifar100
 from vat        import VATLoss
@@ -9,7 +11,12 @@ from model.wrn  import WideResNet
 import torch
 import torch.optim as optim
 from torch.utils.data   import DataLoader
+import torch.nn as nn
+from utils import accuracy
 
+curr_path = os.path.dirname(os.path.abspath(__file__))
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S', filename=os.path.join(curr_path, 'out.task1.log'))
 
 def main(args):
     if args.dataset == "cifar10":
@@ -44,13 +51,47 @@ def main(args):
     ############################################################################
     # TODO: SUPPLY your code
     ############################################################################
+    logging.info('%s; Num Labeled = %s; Epochs = %s; LR = %s; VAT xi = %s; VAT eps = %s; alpha = %s',
+                 args.dataset, args.num_labeled, args.epoch, args.lr, args.vat_xi, args.vat_eps, args.alpha)
+
+    init_path = os.path.join(curr_path, 'init_model.pt')
+    torch.save(model.state_dict(), init_path)
+
+    def save_checkpoint(checkpoint, best_path):
+        logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
+                     checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
+        torch.save(checkpoint, best_path)
+
+    
     loss_fn = nn.CrossEntropyLoss()
     
     optimizer = optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+    
+    
+    def find_model_accuracy(model, test_loader):
+        _, model = load_checkpoint(path, model)
+        with torch.no_grad():
+            model.eval()
 
-    model.train()
+            test_accuracy = torch.empty((0,2))
+            for j, (x_v, y_v) in enumerate(test_loader):
+                x_v, y_v = x_v.to(device), y_v.to(device)
+                y_op_val = model(x_v)
+                res = accuracy(y_op_val, y_v, (1,5))
+                res = torch.FloatTensor(res).reshape(1,2)
+                test_accuracy = torch.cat((test_accuracy, res),0)
+                # loss = criterion(y_op_val, y_v)
+            top1, topk = enumerate(torch.div(torch.sum(test_accuracy, dim=0),test_accuracy.shape[0]))
+            print(top1, topk)
+            return top1, topk
 
+    
+
+    vatLoss = VATLoss(args)
+    
     for epoch in range(args.epoch):
+        model.train()
+        
         for i in range(args.iter_per_epoch):
             try:
                 x_l, y_l    = next(labeled_loader)
@@ -78,7 +119,8 @@ def main(args):
 
             optimizer.zero_grad()
 
-            vaLoss = VATLoss(model, x_ul)
+            
+            vaLoss = vatLoss(model, x_ul)
             predictions = model(x_l)
 
            

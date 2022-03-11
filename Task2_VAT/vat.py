@@ -12,7 +12,7 @@ class VATLoss(nn.Module):
         self.vat_iter = args.vat_iter
 
     def forward(self, model, x):
-        r = torch.randn(x.shape).device('cuda' if torch.cuda.is_available() else 'cpu')
+        r = torch.randn(x.shape)
         r = F.normalize(r, p=2, dim=1)
         r.requires_grad_(True)
 
