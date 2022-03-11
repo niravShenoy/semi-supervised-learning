@@ -44,7 +44,12 @@ def main(args):
     ############################################################################
     # TODO: SUPPLY your code
     ############################################################################
+    loss_fn = nn.CrossEntropyLoss()
     
+    optimizer = optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+
+    model.train()
+
     for epoch in range(args.epoch):
         for i in range(args.iter_per_epoch):
             try:
@@ -70,6 +75,19 @@ def main(args):
             ####################################################################
             # TODO: SUPPLY you code
             ####################################################################
+
+            optimizer.zero_grad()
+
+            vaLoss = VATLoss(model, x_ul)
+            predictions = model(x_l)
+
+           
+            classifcationLoss = loss_fn(predictions, y_l)
+            loss = classifcationLoss + args.alpha*vaLoss
+            
+            loss.backward()
+            optimizer.step()
+
 
 
 
