@@ -5,11 +5,11 @@ import math
 import os
 import logging
 import matplotlib.pyplot as plt
-import numpy as np
+import random
 
 from dataloader import get_cifar10, get_cifar100
-from test import test_cifar10, test_cifar100
 from utils import accuracy
+from test import test_cifar10, test_cifar100, load_checkpoint, save_checkpoint
 
 from model.wrn import WideResNet
 
@@ -20,7 +20,8 @@ from torch.utils.data import DataLoader
 
 curr_path = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s',
-                    datefmt='%a, %d %b %Y %H:%M:%S', filename=os.path.join(curr_path, 'out.task1.log'))
+                    datefmt='%a, %d %b %Y %H:%M:%S', filename=os.path.join(curr_path, 'out.task3.log'))
+
 
 def main(args):
     if args.dataset == "cifar10":
@@ -49,103 +50,72 @@ def main(args):
                              num_workers=args.num_workers)
 
     model = WideResNet(args.model_depth,
-                       args.num_classes, widen_factor=args.model_width)
+                       args.num_classes, widen_factor=args.model_width, dropRate=0.25)
     model = model.to(device)
 
+    logging.info('%s; Num Labeled = %s; Epochs = %s; LR = %s; Momentum = %s; wd = %s',
+                 args.dataset, args.num_labeled, args.epoch, args.lr, args.momentum, args.wd)
+
     init_path = os.path.join(curr_path, 'init_model.pt')
     torch.save(model.state_dict(), init_path)
 
-    def save_checkpoint(checkpoint, best_path):
-        logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
-                    checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
-        torch.save(checkpoint, best_path)
+    # def save_checkpoint(checkpoint, best_path):
+    #     logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
+    #                  checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
+    #     torch.save(checkpoint, best_path)
 
-    try:
-        # labeled data
-        x_l, y_l = next(labeled_loader)
-        img = x_l.reshape(-1,3,32,32)
-        img = torch.transpose(torch.transpose(img, 1, 2), 2, 3)
-        fig, axes1 = plt.subplots(5,5,figsize=(3,3))
-        i=0
-        for j in range(5):
-            for k in range(5):
-                axes1[j][k].set_axis_off()
-                axes1[j][k].imshow(img[i:i+1][0])
-                plt.show()
-                i += 1
-    except StopIteration:
-        labeled_loader = iter(DataLoader(labeled_dataset,
-                                            batch_size=1,
-                                            shuffle=True,
-                                            num_workers=args.num_workers))
-        x_l, y_l = next(labeled_loader)
 
-    try:
-        # unlabeled data        
-        x_ul_w, x_ul_s, _ = next(unlabeled_loader)
-        img_weak = x_ul_w.reshape(-1,3,32,32)
-        img_strong = x_ul_s.reshape(-1,3,32,32)
-        img_weak = torch.transpose(torch.transpose(img_weak, 1, 2), 2, 3)
-        img_strong = torch.transpose(torch.transpose(img_strong, 1, 2), 2, 3)
-        fig, axes1 = plt.subplots(5,5,figsize=(3,3))
-        fig1, axes2 = plt.subplots(5,5,figsize=(3,3))
-        i=0
-        for j in range(5):
-            for k in range(5):
-                axes1[j][k].set_axis_off()
-                axes1[j][k].imshow(img_weak[i:i+1][0])
-                axes2[j][k].set_axis_off()
-                axes2[j][k].imshow(img_strong[i:i+1][0])
-                plt.show()
-                i += 1
-    except StopIteration:
-        unlabeled_loader = iter(DataLoader(unlabeled_dataset,
-                                            batch_size=1,
-                                            shuffle=True,
-                                            num_workers=args.num_workers))
+    # try:
+    #     # unlabeled data
+    #     x_ul_w, x_ul_s, _ = next(unlabeled_loader)
+    #     img_weak = x_ul_w.reshape(-1,3,32,32)
+    #     img_strong = x_ul_s.reshape(-1,3,32,32)
+    #     img_weak = torch.transpose(torch.transpose(img_weak, 1, 2), 2, 3)
+    #     img_strong = torch.transpose(torch.transpose(img_strong, 1, 2), 2, 3)
+    #     fig, axes1 = plt.subplots(5,5,figsize=(3,3))
+    #     fig1, axes2 = plt.subplots(5,5,figsize=(3,3))
+        
+    #     for j in range(5):
+    #         for k in range(5):
+    #             i = random.randint(0, img_weak.shape[0]-1)
+    #             axes1[j][k].set_axis_off()
+    #             axes1[j][k].imshow(img_weak[i:i+1][0])
+    #             axes2[j][k].set_axis_off()
+    #             axes2[j][k].imshow(img_strong[i:i+1][0])
+    #             fig.show()
+    #             fig1.show()
+    #             i += 1
+    # except StopIteration:
+    #     unlabeled_loader = iter(DataLoader(unlabeled_dataset,
+    #                                        batch_size=1,
+    #                                        shuffle=True,
+    #                                        num_workers=args.num_workers))
+    #     x_ul_w, x_ul_s, _ = next(unlabeled_loader)
 
-    criterion = nn.CrossEntropyLoss()
-    exit()
+    # exit()
 
-    for threshold in threshold_list:
-        model.load_state_dict(torch.load(init_path))
-        optimizer = optim.SGD(params=model.parameters(), lr=args.lr,
-                              momentum=args.momentum, weight_decay=args.wd)
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [15, 40, 65, 90])
-        best_loss = float('inf')
-        best_path = os.path.join(
-            curr_path, 'best_model' + str(int(threshold*100)) + '.pt')
-        logging.info('Model Parameters for threshold %s',
-                    threshold)
-        loss_list = []
-        for epoch in range(args.epoch):
-            model.train()
-            
-
-'''
-    init_path = os.path.join(curr_path, 'init_model.pt')
-    torch.save(model.state_dict(), init_path)
-
-    def save_checkpoint(checkpoint, best_path):
-        logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
-                    checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
-        torch.save(checkpoint, best_path)
-
-    criterion = nn.CrossEntropyLoss()
     
-    #threshold_list = [0.6, 0.75, 0.95]
+
+    # path = os.path.join(curr_path,'best_model','cifar10-250','best_model95.pt')
+    # top1, topk = find_model_accuracy(model, test_loader)
+    # exit()
+
+    criterion = nn.CrossEntropyLoss()
+
+    # threshold_list = [0.6, 0.75, 0.95]
     threshold_list = [0.6]
 
     for threshold in threshold_list:
         model.load_state_dict(torch.load(init_path))
         optimizer = optim.SGD(params=model.parameters(), lr=args.lr,
                               momentum=args.momentum, weight_decay=args.wd)
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [15, 40, 65, 90])
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, factor=0.2, patience=7)
         best_loss = float('inf')
         best_path = os.path.join(
             curr_path, 'best_model' + str(int(threshold*100)) + '.pt')
         logging.info('Model Parameters for threshold %s',
-                    threshold)
+                     threshold)
         loss_list = []
         for epoch in range(args.epoch):
             model.train()
@@ -168,54 +138,53 @@ def main(args):
 
                 try:
                     # unlabeled data
-                    x_ul, _ = next(unlabeled_loader)
+                    x_ul_w, x_ul_s, _ = next(unlabeled_loader)
                 except StopIteration:
                     unlabeled_loader = iter(DataLoader(unlabeled_dataset,
                                                        batch_size=args.train_batch,
                                                        shuffle=True,
                                                        num_workers=args.num_workers))
-                    x_ul, _ = next(unlabeled_loader)
+                    x_ul_w, x_ul_s, _ = next(unlabeled_loader)
 
-                x_l, y_l = x_l.to(device), y_l.to(device)
-                x_ul = x_ul.to(device)
+                x_l, y_l, x_ul_w, x_ul_s = x_l.to(device), y_l.to(
+                    device), x_ul_w.to(device), x_ul_s.to(device)
+                
+                # Train all data on the model
+                count_l = x_l.shape[0]
+                count_ul_w = x_ul_w.shape[0]
+                count_ul_s = x_ul_s.shape[0]
 
-                # concatenate labeled and unlabeled
-                if x_pseudo_set:
-                    x_pseudo_tensor = torch.stack(x_pseudo_set).to(device)
-                    x_l = torch.cat((x_l, x_pseudo_tensor))
-                    y_l = torch.cat(
-                        (y_l, torch.tensor(y_pseudo_set).to(device)))
+                X = torch.cat((x_l, x_ul_w, x_ul_s))
 
-                # train model
-                y_pred_l = model(x_l)
+                Y = model(X)
 
-                # compute loss
-                correct += (torch.argmax(y_pred_l, axis=1)
+                y_l_pred, y_ul_w_pred, y_ul_s_pred = torch.split(Y, [count_l, count_ul_w, count_ul_s])
+
+                # Compute Accuracy of supervised training
+                correct += (torch.argmax(y_l_pred, axis=1)
                             == y_l).float().sum()
                 total += float(x_l.size(dim=0))
 
-                loss = criterion(y_pred_l, y_l)
+                # Supervised Loss
+                loss_s = criterion(y_l_pred, y_l).mean()
+
+                # Unsupervised Loss
+                y_pseudolabel_prob, y_pseudolabel_class = torch.max(y_ul_w_pred, axis=1)
+                y_pseudolabel_prob = torch.where(y_pseudolabel_prob >= threshold, 1.0, 0.0)
+                y_strong_pred = torch.softmax(y_ul_s_pred, dim=-1)
+                loss_u = (criterion(y_strong_pred, y_pseudolabel_class) * y_pseudolabel_prob).mean()
+
+                # Overall Loss
+                loss = loss_s + args.lambda_u * loss_u
+
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
                 running_loss += loss.item()
 
-                # predict unlabeled
-                y_pseudo_pred = model(x_ul)
-
-                # add to subset if probability is greater than threshold
-                y_pseudo_label_prob, y_pseudo_label_class = torch.max(
-                    y_pseudo_pred, axis=1)
-
-                x_pseudo_set = []
-                y_pseudo_set = []
-                for k, row in enumerate(y_pseudo_label_prob):
-                    if row >= threshold:
-                        x_pseudo_set.append(x_ul[k, :, :, :])
-                        y_pseudo_set.append(y_pseudo_label_class[k])
                 # End of batch
 
-            accuracy = 100 * correct / total
+            accuracy_train = 100 * correct / total
             running_loss /= args.iter_per_epoch
             loss_list.append(running_loss)
 
@@ -238,7 +207,7 @@ def main(args):
                 logging.info("Epoch %s/%s, Train Accuracy: %.3f, Test Accuracy: %.3f, Training Loss: %.3f, Test Loss: %.3f",
                     epoch+1,
                     args.epoch,
-                    accuracy.item(),
+                    accuracy_train.item(),
                     test_accuracy,
                     running_loss,
                     test_loss
@@ -254,11 +223,11 @@ def main(args):
                         'state_dict': model.state_dict(),
                     }
                     save_checkpoint(checkpoint, best_path)
-            scheduler.step()
+            scheduler.step(test_loss)
             print("Epoch {}/{}, Train Accuracy: {:.3f}, Test Accuracy: {:.3f}, Training Loss: {:.3f}, Test Loss: {:.3f}".format(
                     epoch+1,
                     args.epoch,
-                    accuracy.item(),
+                    accuracy_train.item(),
                     test_accuracy,
                     running_loss,
                     test_loss
@@ -277,7 +246,6 @@ def main(args):
             test_cifar10(args, device, test_loader, best_path)
         elif args.dataset == "cifar100":
             test_cifar100(args, device, test_loader, best_path)
-            '''
 
 
 if __name__ == "__main__":
@@ -292,7 +260,7 @@ if __name__ == "__main__":
     parser.add_argument('--num-labeled', type=int,
                         default=4000, help='Total number of labeled samples')
 
-    #Hyperparameters
+    # Hyperparameters
     parser.add_argument("--lr", default=0.1, type=float,
                         help="The initial learning rate")
     parser.add_argument("--momentum", default=0.9, type=float,
@@ -302,7 +270,7 @@ if __name__ == "__main__":
     parser.add_argument("--expand-labels", action="store_true",
                         help="expand labels to fit eval steps")
 
-    #Training Configuration
+    # Training Configuration
     parser.add_argument('--train-batch', default=64, type=int,
                         help='train batchsize')
     parser.add_argument('--test-batch', default=64, type=int,
@@ -324,7 +292,7 @@ if __name__ == "__main__":
                         help="model width for wide resnet")
     parser.add_argument('--threshold', type=float, default=0.95,
                         help='Confidence Threshold for pseudo labeling')
-    parser.add_argument('--lambda', type=float, default=0.8,
+    parser.add_argument('--lambda-u', type=float, default=0.6,
                         help='Coefficient for Unsupervised Loss')
 
     # Add more arguments if you need them

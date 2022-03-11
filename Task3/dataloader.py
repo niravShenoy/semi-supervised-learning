@@ -130,9 +130,8 @@ class CIFAR10SSL(datasets.CIFAR10):
         target = torch.tensor(target)
 
         if self.is_strong_augment:
-            img_strong = self.strong_augment(img)
-            print('Weak = {}, Strong = {}'.format(torch.tensor(img).dtype, torch.tensor(img_strong).dtype))
-            return torch.tensor(img), torch.tensor(img_strong).to(torch.uint8), target.long()
+            img_strong = self.strong_augment(img.byte())
+            return torch.tensor(img), torch.tensor(img_strong), target.long()
 
         return torch.tensor(img), target.long()
 
@@ -148,34 +147,30 @@ class CIFAR100SSL(datasets.CIFAR100):
         if indexs is not None:
             self.data = self.data[indexs]
             self.targets = np.array(self.targets)[indexs]
+            self.transform = transform
+            self.is_strong_augment = is_strong_augment
+            if self.is_strong_augment:
+                if strong_augment is None:
+                    self.strong_augment = transforms.RandAugment(1, 2)
+                else:
+                    self.strong_augment = strong_augment
 
     def __getitem__(self, index):
         img, target = self.data[index], self.targets[index]
         img = Image.fromarray(img)
+        img_strong = img
 
         if self.transform is not None:
             img = self.transform(img)
-            ad = AugmentedDataset(img, transform=self.transform,
-                                   is_strong_augment=self.is_strong_augment, strong_augment=self.strong_augment)
-
+            
         if self.target_transform is not None:
             target = self.target_transform(target)
 
         target = torch.tensor(target)
+
+        if self.is_strong_augment:
+            img_strong = self.strong_augment(img)
+            print('Weak = {}, Strong = {}'.format(torch.tensor(img).dtype, torch.tensor(img_strong).dtype))
+            return torch.tensor(img), torch.tensor(img_strong), target.long()
+
         return torch.tensor(img), target.long()
-
-
-# class AugmentedDataset(Dataset):
-#     def __init__(self, data, target=None, num_classes=None, transform=None, is_strong_augment=False, strong_augment=None, *args, **kwargs):
-#         super(AugmentedDataset, self).__init__()
-#         self.data = data
-#         self.target = target
-#         self.transform = transform
-#         self.is_strong_augment = is_strong_augment
-#         if self.is_strong_augment:
-#             if self.strong_augment is None:
-#                 self.strong_augment = transforms.RandAugment(3, 4)
-#             else:
-#                 self.strong_augment = strong_augment
-
-#     def __getitem__(self, idx):

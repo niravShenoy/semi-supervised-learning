@@ -228,11 +228,6 @@ def main(args):
 
         logging.info('Training Complete...')
 
-        # plt.plot(loss_list)
-        # loss_function = os.path.join(
-        # curr_path, 'loss' + str(int(threshold*100)) + '.png')
-        # plt.savefig(loss_function)
-        # plt.close()
         # Model Evaluation
         logging.info('Evalutating Model for Threshold = %s', threshold)
         if args.dataset == "cifar10":
@@ -253,7 +248,7 @@ if __name__ == "__main__":
     # parser.add_argument('--num-labeled', type=int,
     #                     default=2500, help='Total number of labeled samples')
     parser.add_argument('--num-labeled', type=int,
-                        default=10000, help='Total number of labeled samples')
+                        default=4000, help='Total number of labeled samples')
     parser.add_argument("--lr", default=0.1, type=float,
                         help="The initial learning rate")
     # parser.add_argument("--lr", default=0.1, type=float,
