@@ -7,6 +7,8 @@ from model.wrn import WideResNet
 import torch.nn as nn
 from utils import accuracy
 
+curr_path = os.path.dirname(os.path.abspath(__file__))
+
 def test_cifar10(args, device, testdataset, filepath = "./path/to/model.pth.tar"):
     '''
     args: 
@@ -29,7 +31,7 @@ def test_cifar10(args, device, testdataset, filepath = "./path/to/model.pth.tar"
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
     evaluate_model(model, testdataset, criterion, device)
-    top1, topk = find_model_accuracy(model, testdataset)
+    top1, topk = find_model_accuracy(model, testdataset, filepath, device)
     # raise NotImplementedError
 
 def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar"):
@@ -54,7 +56,7 @@ def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar")
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
     evaluate_model(model, testdataset, criterion, device)
-    top1, topk = find_model_accuracy(model, testdataset, filepath)
+    top1, topk = find_model_accuracy(model, testdataset, filepath, device)
     # raise NotImplementedError
 
 def load_checkpoint(ckpt_path, model):
@@ -89,7 +91,7 @@ def save_checkpoint(checkpoint, best_path):
                      checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
         torch.save(checkpoint, best_path)
 
-def find_model_accuracy(model, test_loader, path):
+def find_model_accuracy(model, test_loader, path, device):
     _, model = load_checkpoint(path, model)
     with torch.no_grad():
         model.eval()
@@ -103,6 +105,6 @@ def find_model_accuracy(model, test_loader, path):
             test_accuracy = torch.cat((test_accuracy, res),0)
             # loss = criterion(y_op_val, y_v)
         top1, topk = enumerate(torch.div(torch.sum(test_accuracy, dim=0),test_accuracy.shape[0]))
-        logging.info('Top 1 Accuracy = %s; Top 5 Accuracy = %s', top1, topk)
-        print(top1, topk)
-        return top1, topk
+        logging.info('Top 1 Accuracy = %s; Top 5 Accuracy = %s', top1[1].item(), topk[1].item())
+        print(top1[1].item(), topk[1].item())
+        return top1[1].item(), topk[1].item()
