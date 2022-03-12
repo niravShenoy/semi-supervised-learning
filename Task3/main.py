@@ -4,7 +4,7 @@ import argparse
 import math
 import os
 import logging
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import random
 
 from dataloader import get_cifar10, get_cifar100
@@ -105,147 +105,159 @@ def main(args):
     # threshold_list = [0.6, 0.75, 0.95]
     threshold_list = [0.6]
 
-    for threshold in threshold_list:
-        model.load_state_dict(torch.load(init_path))
-        optimizer = optim.SGD(params=model.parameters(), lr=args.lr,
-                              momentum=args.momentum, weight_decay=args.wd)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, factor=0.2, patience=7)
-        best_loss = float('inf')
-        best_path = os.path.join(
-            curr_path, 'best_model' + str(int(threshold*100)) + '.pt')
-        logging.info('Model Parameters for threshold %s',
-                     threshold)
-        loss_list = []
-        for epoch in range(args.epoch):
-            model.train()
-            x_pseudo_set = []
-            y_pseudo_set = []
-            correct = 0
-            total = 0
-            running_loss = 0.0
+    threshold = 0.5
+    threshold_int = (1-threshold)*10/args.epoch
+    lambda_u = args.lambda_u
+    lambda_int = (1-lambda_u)*10/args.epoch
 
-            for i in range(args.iter_per_epoch):
-                try:
-                    # labeled data
-                    x_l, y_l = next(labeled_loader)
-                except StopIteration:
-                    labeled_loader = iter(DataLoader(labeled_dataset,
-                                                     batch_size=args.train_batch,
-                                                     shuffle=True,
-                                                     num_workers=args.num_workers))
-                    x_l, y_l = next(labeled_loader)
 
-                try:
-                    # unlabeled data
-                    x_ul_w, x_ul_s, _ = next(unlabeled_loader)
-                except StopIteration:
-                    unlabeled_loader = iter(DataLoader(unlabeled_dataset,
-                                                       batch_size=args.train_batch,
-                                                       shuffle=True,
-                                                       num_workers=args.num_workers))
-                    x_ul_w, x_ul_s, _ = next(unlabeled_loader)
+    # for threshold in threshold_list:
+    model.load_state_dict(torch.load(init_path))
+    optimizer = optim.SGD(params=model.parameters(), lr=args.lr,
+                            momentum=args.momentum, weight_decay=args.wd)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, factor=0.2, patience=7)
+    best_loss = float('inf')
+    # best_path = os.path.join(
+    #     curr_path, 'best_model' + str(int(threshold*100)) + '.pt')
+    best_path = os.path.join(
+        curr_path, 'best_model.pt')
+    # logging.info('Model Parameters for threshold %s',
+    #                 threshold)
+    loss_list = []
+    for epoch in range(args.epoch):
+        model.train()
+        x_pseudo_set = []
+        y_pseudo_set = []
+        correct = 0
+        total = 0
+        running_loss = 0.0
 
-                x_l, y_l, x_ul_w, x_ul_s = x_l.to(device), y_l.to(
-                    device), x_ul_w.to(device), x_ul_s.to(device)
-                
-                # Train all data on the model
-                count_l = x_l.shape[0]
-                count_ul_w = x_ul_w.shape[0]
-                count_ul_s = x_ul_s.shape[0]
+        for i in range(args.iter_per_epoch):
+            try:
+                # labeled data
+                x_l, y_l = next(labeled_loader)
+            except StopIteration:
+                labeled_loader = iter(DataLoader(labeled_dataset,
+                                                    batch_size=args.train_batch,
+                                                    shuffle=True,
+                                                    num_workers=args.num_workers))
+                x_l, y_l = next(labeled_loader)
 
-                X = torch.cat((x_l, x_ul_w, x_ul_s))
+            try:
+                # unlabeled data
+                x_ul_w, x_ul_s, _ = next(unlabeled_loader)
+            except StopIteration:
+                unlabeled_loader = iter(DataLoader(unlabeled_dataset,
+                                                    batch_size=args.train_batch,
+                                                    shuffle=True,
+                                                    num_workers=args.num_workers))
+                x_ul_w, x_ul_s, _ = next(unlabeled_loader)
 
-                Y = model(X)
+            x_l, y_l, x_ul_w, x_ul_s = x_l.to(device), y_l.to(
+                device), x_ul_w.to(device), x_ul_s.to(device)
+            
+            # Train all data on the model
+            count_l = x_l.shape[0]
+            count_ul_w = x_ul_w.shape[0]
+            count_ul_s = x_ul_s.shape[0]
 
-                y_l_pred, y_ul_w_pred, y_ul_s_pred = torch.split(Y, [count_l, count_ul_w, count_ul_s])
+            X = torch.cat((x_l, x_ul_w, x_ul_s))
 
-                # Compute Accuracy of supervised training
-                correct += (torch.argmax(y_l_pred, axis=1)
-                            == y_l).float().sum()
-                total += float(x_l.size(dim=0))
+            Y = model(X)
 
-                # Supervised Loss
-                loss_s = criterion(y_l_pred, y_l).mean()
+            y_l_pred, y_ul_w_pred, y_ul_s_pred = torch.split(Y, [count_l, count_ul_w, count_ul_s])
 
-                # Unsupervised Loss
-                y_pseudolabel_prob, y_pseudolabel_class = torch.max(y_ul_w_pred, axis=1)
-                y_pseudolabel_prob = torch.where(y_pseudolabel_prob >= threshold, 1.0, 0.0)
-                y_strong_pred = torch.softmax(y_ul_s_pred, dim=-1)
-                loss_u = (criterion(y_strong_pred, y_pseudolabel_class) * y_pseudolabel_prob).mean()
+            # Compute Accuracy of supervised training
+            correct += (torch.argmax(y_l_pred, axis=1)
+                        == y_l).float().sum()
+            total += float(x_l.size(dim=0))
 
-                # Overall Loss
-                loss = loss_s + args.lambda_u * loss_u
+            # Supervised Loss
+            loss_s = criterion(y_l_pred, y_l)
 
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                running_loss += loss.item()
+            # Unsupervised Loss
+            y_pseudolabel_prob, y_pseudolabel_class = torch.max(y_ul_w_pred, axis=1)
+            y_pseudolabel_prob = torch.where(y_pseudolabel_prob >= threshold, 1.0, 0.0)
+            y_strong_pred = torch.softmax(y_ul_s_pred, dim=-1)
+            loss_u = (criterion(y_strong_pred, y_pseudolabel_class) * y_pseudolabel_prob).mean()
 
-                # End of batch
+            # Overall Loss
+            loss = (loss_s + lambda_u * loss_u)
 
-            accuracy_train = 100 * correct / total
-            running_loss /= args.iter_per_epoch
-            loss_list.append(running_loss)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
 
-            with torch.no_grad():
-                model.eval()
-                test_loss = 0.0
-                correct = 0.0
-                for j, (x_v, y_v) in enumerate(test_loader):
-                    x_v, y_v = x_v.to(device), y_v.to(device)
-                    y_op_val = model(x_v)
-                    loss = criterion(y_op_val, y_v)
+            # End of batch
 
-                    test_loss += loss.item()
-                    _, y_pred_test = y_op_val.max(1)
-                    correct += y_pred_test.eq(y_v).sum()
+        accuracy_train = 100 * correct / total
+        running_loss /= args.iter_per_epoch
+        loss_list.append(running_loss)
 
-                test_accuracy = 100 * correct.float() / len(test_loader.dataset)
-                test_loss = test_loss / j
+        if epoch % 10:
+            threshold += threshold_int
+            lambda_u += lambda_int
 
-                logging.info("Epoch %s/%s, Train Accuracy: %.3f, Test Accuracy: %.3f, Training Loss: %.3f, Test Loss: %.3f",
-                    epoch+1,
-                    args.epoch,
-                    accuracy_train.item(),
-                    test_accuracy,
-                    running_loss,
-                    test_loss
-                )
+        with torch.no_grad():
+            model.eval()
+            test_loss = 0.0
+            correct = 0.0
+            for j, (x_v, y_v) in enumerate(test_loader):
+                x_v, y_v = x_v.to(device), y_v.to(device)
+                y_op_val = model(x_v)
+                loss = criterion(y_op_val, y_v)
 
-                if test_loss < best_loss:
-                    best_loss = test_loss
-                    checkpoint = {
-                        'epoch': epoch+1,
-                        'threshold': threshold,
-                        'validation_loss': test_loss,
-                        'validation_accuracy': test_accuracy,
-                        'state_dict': model.state_dict(),
-                    }
-                    save_checkpoint(checkpoint, best_path)
-            scheduler.step(test_loss)
-            print("Epoch {}/{}, Train Accuracy: {:.3f}, Test Accuracy: {:.3f}, Training Loss: {:.3f}, Test Loss: {:.3f}".format(
-                    epoch+1,
-                    args.epoch,
-                    accuracy_train.item(),
-                    test_accuracy,
-                    running_loss,
-                    test_loss
-                ))
+                test_loss += loss.item()
+                _, y_pred_test = y_op_val.max(1)
+                correct += y_pred_test.eq(y_v).sum()
 
-        logging.info('Training Complete...')
+            test_accuracy = 100 * correct.float() / len(test_loader.dataset)
+            test_loss = test_loss / j
 
-        # plt.plot(loss_list)
-        # loss_function = os.path.join(
-            # curr_path, 'loss' + str(int(threshold*100)) + '.png')
-        # plt.savefig(loss_function)
-        # plt.close()
-        # Model Evaluation
-        logging.info('Evalutating Model for Threshold = %s', threshold)
-        if args.dataset == "cifar10":
-            test_cifar10(args, device, test_loader, best_path)
-        elif args.dataset == "cifar100":
-            test_cifar100(args, device, test_loader, best_path)
+            logging.info("Epoch %s/%s, Train Accuracy: %.3f, Test Accuracy: %.3f, Training Loss: %.3f, Test Loss: %.3f",
+                epoch+1,
+                args.epoch,
+                accuracy_train.item(),
+                test_accuracy,
+                running_loss,
+                test_loss
+            )
+
+            if test_loss < best_loss:
+                best_loss = test_loss
+                checkpoint = {
+                    'epoch': epoch+1,
+                    'threshold': threshold,
+                    'validation_loss': test_loss,
+                    'validation_accuracy': test_accuracy,
+                    'state_dict': model.state_dict(),
+                }
+                save_checkpoint(checkpoint, best_path)
+        scheduler.step(test_loss)
+        print("Epoch {}/{}, Train Accuracy: {:.3f}, Test Accuracy: {:.3f}, Training Loss: {:.3f}, Test Loss: {:.3f}".format(
+                epoch+1,
+                args.epoch,
+                accuracy_train.item(),
+                test_accuracy,
+                running_loss,
+                test_loss
+            ))
+
+    logging.info('Training Complete...')
+
+    # plt.plot(loss_list)
+    # loss_function = os.path.join(
+        # curr_path, 'loss' + str(int(threshold*100)) + '.png')
+    # plt.savefig(loss_function)
+    # plt.close()
+    # Model Evaluation
+    # logging.info('Evalutating Model for Threshold = %s', threshold)
+    if args.dataset == "cifar10":
+        test_cifar10(args, device, test_loader, best_path)
+    elif args.dataset == "cifar100":
+        test_cifar100(args, device, test_loader, best_path)
 
 
 if __name__ == "__main__":
@@ -275,7 +287,7 @@ if __name__ == "__main__":
                         help='train batchsize')
     parser.add_argument('--test-batch', default=64, type=int,
                         help='train batchsize')
-    parser.add_argument('--total-iter', default=1024*1, type=int,
+    parser.add_argument('--total-iter', default=1024*50, type=int,
                         help='total number of iterations to run')
     parser.add_argument('--iter-per-epoch', default=1024, type=int,
                         help="Number of iterations to run per epoch")
@@ -292,7 +304,7 @@ if __name__ == "__main__":
                         help="model width for wide resnet")
     parser.add_argument('--threshold', type=float, default=0.95,
                         help='Confidence Threshold for pseudo labeling')
-    parser.add_argument('--lambda-u', type=float, default=0.6,
+    parser.add_argument('--lambda-u', type=float, default=0.5,
                         help='Coefficient for Unsupervised Loss')
 
     # Add more arguments if you need them

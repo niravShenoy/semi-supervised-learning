@@ -112,7 +112,7 @@ class CIFAR10SSL(datasets.CIFAR10):
             self.is_strong_augment = is_strong_augment
             if self.is_strong_augment:
                 if strong_augment is None:
-                    self.strong_augment = transforms.RandAugment(3, 4)
+                    self.strong_augment = transforms.RandAugment(1, 2)
                 else:
                     self.strong_augment = strong_augment
 
@@ -169,8 +169,7 @@ class CIFAR100SSL(datasets.CIFAR100):
         target = torch.tensor(target)
 
         if self.is_strong_augment:
-            img_strong = self.strong_augment(img)
-            print('Weak = {}, Strong = {}'.format(torch.tensor(img).dtype, torch.tensor(img_strong).dtype))
+            img_strong = self.strong_augment(img.byte())
             return torch.tensor(img), torch.tensor(img_strong), target.long()
 
         return torch.tensor(img), target.long()
