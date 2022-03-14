@@ -31,6 +31,7 @@ def test_cifar10(args, device, testdataset, filepath = "./path/to/model.pth.tar"
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
     evaluate_model(model, testdataset, criterion, device)
+    top1, topk = find_model_accuracy(model, testdataset, device)
     # raise NotImplementedError
 
 def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar"):
@@ -55,6 +56,7 @@ def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar")
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
     evaluate_model(model, testdataset, criterion, device)
+    top1, topk = find_model_accuracy(model, testdataset, device)
     # raise NotImplementedError
 
 def load_checkpoint(ckpt_path, model):
@@ -83,3 +85,25 @@ def evaluate_model(model, test_loader, criterion, device):
             test_accuracy, 
             test_loss
         )
+
+def save_checkpoint(checkpoint, best_path):
+        logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
+                     checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
+        torch.save(checkpoint, best_path)
+
+def find_model_accuracy(model, test_loader, device):
+    # _, model = load_checkpoint(path, model)
+    with torch.no_grad():
+        model.eval()
+
+        test_accuracy = torch.empty((0,2))
+        for j, (x_v, y_v) in enumerate(test_loader):
+            x_v, y_v = x_v.to(device), y_v.to(device)
+            y_op_val = model(x_v)
+            res = accuracy(y_op_val, y_v, (1,5))
+            res = torch.FloatTensor(res).reshape(1,2)
+            test_accuracy = torch.cat((test_accuracy, res),0)
+            # loss = criterion(y_op_val, y_v)
+        top1, topk = enumerate(torch.div(torch.sum(test_accuracy, dim=0),test_accuracy.shape[0]))
+        logging.info('Top 1 Accuracy = %s; Top 5 Accuracy = %s', top1[1].item(), topk[1].item())
+        return top1[1].item(), topk[1].item()

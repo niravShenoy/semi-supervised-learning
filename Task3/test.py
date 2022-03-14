@@ -31,7 +31,7 @@ def test_cifar10(args, device, testdataset, filepath = "./path/to/model.pth.tar"
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
     evaluate_model(model, testdataset, criterion, device)
-    top1, topk = find_model_accuracy(model, testdataset, filepath, device)
+    top1, topk = find_model_accuracy(model, testdataset, device)
     # raise NotImplementedError
 
 def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar"):
@@ -56,7 +56,7 @@ def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar")
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
     evaluate_model(model, testdataset, criterion, device)
-    top1, topk = find_model_accuracy(model, testdataset, filepath, device)
+    top1, topk = find_model_accuracy(model, testdataset, device)
     # raise NotImplementedError
 
 def load_checkpoint(ckpt_path, model):
@@ -91,8 +91,8 @@ def save_checkpoint(checkpoint, best_path):
                      checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
         torch.save(checkpoint, best_path)
 
-def find_model_accuracy(model, test_loader, path, device):
-    _, model = load_checkpoint(path, model)
+def find_model_accuracy(model, test_loader, device):
+    # _, model = load_checkpoint(path, model)
     with torch.no_grad():
         model.eval()
 
