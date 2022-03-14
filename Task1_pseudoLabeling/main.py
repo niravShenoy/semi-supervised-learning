@@ -5,11 +5,12 @@ import math
 import os
 import logging
 # import matplotlib.pyplot as plt
+from torch.utils.data import random_split
 
 from dataloader import get_cifar10, get_cifar100
 from test import test_cifar10, test_cifar100
 from utils import accuracy
-from test import load_checkpoint
+from test import test_cifar10, test_cifar100, load_checkpoint, save_checkpoint
 
 from model.wrn import WideResNet
 
@@ -36,6 +37,10 @@ def main(args):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    val_size = 1000
+    test_size = len(test_dataset) - val_size
+    test_dataset, val_dataset = random_split(test_dataset, [test_size, val_size])
+
     labeled_loader = iter(DataLoader(labeled_dataset,
                                      batch_size=args.train_batch,
                                      shuffle=True,
@@ -45,6 +50,11 @@ def main(args):
                                        shuffle=True,
                                        num_workers=args.num_workers))
     test_loader = DataLoader(test_dataset,
+                             batch_size=args.test_batch,
+                             shuffle=False,
+                             num_workers=args.num_workers)
+                    
+    val_loader = DataLoader(val_dataset,
                              batch_size=args.test_batch,
                              shuffle=False,
                              num_workers=args.num_workers)
@@ -63,29 +73,29 @@ def main(args):
     init_path = os.path.join(curr_path, 'init_model.pt')
     torch.save(model.state_dict(), init_path)
 
-    def save_checkpoint(checkpoint, best_path):
-        logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
-                     checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
-        torch.save(checkpoint, best_path)
+    # def save_checkpoint(checkpoint, best_path):
+    #     logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
+    #                  checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
+    #     torch.save(checkpoint, best_path)
 
     criterion = nn.CrossEntropyLoss()
 
-    def find_model_accuracy(model, test_loader):
-        _, model = load_checkpoint(path, model)
-        with torch.no_grad():
-            model.eval()
+    # def find_model_accuracy(model, test_loader):
+    #     _, model = load_checkpoint(path, model)
+    #     with torch.no_grad():
+    #         model.eval()
 
-            test_accuracy = torch.empty((0,2))
-            for j, (x_v, y_v) in enumerate(test_loader):
-                x_v, y_v = x_v.to(device), y_v.to(device)
-                y_op_val = model(x_v)
-                res = accuracy(y_op_val, y_v, (1,5))
-                res = torch.FloatTensor(res).reshape(1,2)
-                test_accuracy = torch.cat((test_accuracy, res),0)
-                # loss = criterion(y_op_val, y_v)
-            top1, topk = enumerate(torch.div(torch.sum(test_accuracy, dim=0),test_accuracy.shape[0]))
-            print(top1, topk)
-            return top1, topk
+    #         test_accuracy = torch.empty((0,2))
+    #         for j, (x_v, y_v) in enumerate(test_loader):
+    #             x_v, y_v = x_v.to(device), y_v.to(device)
+    #             y_op_val = model(x_v)
+    #             res = accuracy(y_op_val, y_v, (1,5))
+    #             res = torch.FloatTensor(res).reshape(1,2)
+    #             test_accuracy = torch.cat((test_accuracy, res),0)
+    #             # loss = criterion(y_op_val, y_v)
+    #         top1, topk = enumerate(torch.div(torch.sum(test_accuracy, dim=0),test_accuracy.shape[0]))
+    #         print(top1, topk)
+    #         return top1, topk
 
     # path = os.path.join(curr_path,'best_model','cifar10-250','best_model95.pt')
     # top1, topk = find_model_accuracy(model, test_loader)
@@ -185,7 +195,7 @@ def main(args):
                 model.eval()
                 test_loss = 0.0
                 correct = 0.0
-                for j, (x_v, y_v) in enumerate(test_loader):
+                for j, (x_v, y_v) in enumerate(val_loader):
                     x_v, y_v = x_v.to(device), y_v.to(device)
                     y_op_val = model(x_v)
                     loss = criterion(y_op_val, y_v)
@@ -194,7 +204,7 @@ def main(args):
                     _, y_pred_test = y_op_val.max(1)
                     correct += y_pred_test.eq(y_v).sum()
 
-                test_accuracy = 100 * correct.float() / len(test_loader.dataset)
+                test_accuracy = 100 * correct.float() / len(val_loader.dataset)
                 test_loss = test_loss / j
 
                 logging.info("Epoch %s/%s, Train Accuracy: %.3f, Test Accuracy: %.3f, Training Loss: %.3f, Test Loss: %.3f",

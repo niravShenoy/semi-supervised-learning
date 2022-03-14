@@ -16,7 +16,7 @@ Locally, we tried smaller runs of our model to tune hyperparameters. The followi
     - This could be a case of vanishing gradients
 
     Scheduler
-        - We eventually decided on an initial learning rate of 0.1 used alongside a step LR scheduler of 0.5 every 25 epochs
+        - We eventually decided on an initial learning rate of 0.1 used alongside a step LR scheduler of 0.2 with a Plateau Scheduler with a patience of 7 epochs
         - This led to a massive jump in test accuracy in the case of CIFAR-10 (4000) and CIFAR-100 (10000)
         - A similar jump was not noticed for CIFAR-10(250) and CIFAR-100 (2500)
 

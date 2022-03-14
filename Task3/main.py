@@ -17,6 +17,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.utils.data import random_split
 
 curr_path = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s',
@@ -36,6 +37,10 @@ def main(args):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    val_size = 1000
+    test_size = len(test_dataset) - val_size
+    test_dataset, val_dataset = random_split(test_dataset, [test_size, val_size])
+
     labeled_loader = iter(DataLoader(labeled_dataset,
                                      batch_size=args.train_batch,
                                      shuffle=True,
@@ -45,6 +50,11 @@ def main(args):
                                        shuffle=True,
                                        num_workers=args.num_workers))
     test_loader = DataLoader(test_dataset,
+                             batch_size=args.test_batch,
+                             shuffle=False,
+                             num_workers=args.num_workers)
+        
+    val_loader = DataLoader(val_dataset,
                              batch_size=args.test_batch,
                              shuffle=False,
                              num_workers=args.num_workers)
@@ -204,7 +214,7 @@ def main(args):
             model.eval()
             test_loss = 0.0
             correct = 0.0
-            for j, (x_v, y_v) in enumerate(test_loader):
+            for j, (x_v, y_v) in enumerate(val_loader):
                 x_v, y_v = x_v.to(device), y_v.to(device)
                 y_op_val = model(x_v)
                 loss = criterion(y_op_val, y_v)
@@ -213,7 +223,7 @@ def main(args):
                 _, y_pred_test = y_op_val.max(1)
                 correct += y_pred_test.eq(y_v).sum()
 
-            test_accuracy = 100 * correct.float() / len(test_loader.dataset)
+            test_accuracy = 100 * correct.float() / len(val_loader.dataset)
             test_loss = test_loss / j
 
             logging.info("Epoch %s/%s, Train Accuracy: %.3f, Test Accuracy: %.3f, Training Loss: %.3f, Test Loss: %.3f",
@@ -287,7 +297,7 @@ if __name__ == "__main__":
                         help='train batchsize')
     parser.add_argument('--test-batch', default=64, type=int,
                         help='train batchsize')
-    parser.add_argument('--total-iter', default=1024*50, type=int,
+    parser.add_argument('--total-iter', default=1024*100, type=int,
                         help='total number of iterations to run')
     parser.add_argument('--iter-per-epoch', default=1024, type=int,
                         help="Number of iterations to run per epoch")
