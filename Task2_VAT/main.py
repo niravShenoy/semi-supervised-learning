@@ -1,5 +1,7 @@
 import argparse
 import math
+import logging
+import os
 
 from dataloader import get_cifar10, get_cifar100
 from vat        import VATLoss
@@ -9,7 +11,12 @@ from model.wrn  import WideResNet
 import torch
 import torch.optim as optim
 from torch.utils.data   import DataLoader
+import torch.nn as nn
+from utils import accuracy
 
+curr_path = os.path.dirname(os.path.abspath(__file__))
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S', filename=os.path.join(curr_path, 'out.task1.log'))
 
 def main(args):
     if args.dataset == "cifar10":
@@ -44,9 +51,42 @@ def main(args):
     ############################################################################
     # TODO: SUPPLY your code
     ############################################################################
+    #logging.info('%s; Num Labeled = %s; Epochs = %s; LR = %s; VAT xi = %s; VAT eps = %s; alpha = %s',
+                 #args.dataset, args.num_labeled, args.epoch, args.lr, args.vat_xi, args.vat_eps, args.alpha)
+
+    #init_path = os.path.join(curr_path, 'init_model.pt')
+    #torch.save(model.state_dict(), init_path)
+
+
+    #def save_checkpoint(checkpoint, best_path):
+     #   logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
+      #               checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
+       # torch.save(checkpoint, best_path)
+
+    
+    loss_fn = nn.CrossEntropyLoss()
+    
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+
+    
+
+    vatLoss = VATLoss(args)
+    
+    args.epoch = 5
+    args.iter_per_epoch = 20
+    steps = 0
+    print_every = 40
     
     for epoch in range(args.epoch):
+        model.train()
+        loss_list = []
+        correct = 0
+        total = 0
+        running_loss = 0.0
+        
         for i in range(args.iter_per_epoch):
+            steps += 1
+
             try:
                 x_l, y_l    = next(labeled_loader)
             except StopIteration:
@@ -70,6 +110,54 @@ def main(args):
             ####################################################################
             # TODO: SUPPLY you code
             ####################################################################
+
+            optimizer.zero_grad()
+
+            
+            vaLoss = vatLoss(model, x_ul)
+            predictions = model(x_l)
+            
+            
+            correct += (torch.argmax(predictions, axis=1)
+                            == y_l).float().sum()
+            total += float(x_l.size(dim=0))
+
+            classifcationLoss = loss_fn(predictions, y_l)
+            loss = classifcationLoss + args.alpha*vaLoss
+         
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+        
+        train_accuracy = 100 * correct / total
+        running_loss /= args.iter_per_epoch
+        loss_list.append(running_loss)
+
+        with torch.no_grad():
+          model.eval()
+          test_loss = 0.0
+          correct = 0.0
+          for j, (x_v, y_v) in enumerate(test_loader):
+            x_v, y_v = x_v.to(device), y_v.to(device)
+            y_op_val = model(x_v)
+            loss = loss_fn(y_op_val, y_v)
+            
+            test_loss += loss.item()
+            _, y_pred_test = y_op_val.max(1)
+            correct += y_pred_test.eq(y_v).sum()
+
+          test_accuracy = 100 * correct.float() / len(test_loader.dataset)
+          test_loss = test_loss / j
+
+          print("Epoch {}/{}, Train Accuracy: {:.3f}, Test Accuracy: {:.3f}, Training Loss: {:.3f}, Test Loss: {:.3f}".format(
+                epoch+1,
+                args.epoch,
+                train_accuracy.item(),
+                test_accuracy,
+                running_loss,
+                test_loss
+            ))
 
 
 

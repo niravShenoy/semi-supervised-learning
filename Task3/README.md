@@ -16,18 +16,17 @@ Locally, we tried smaller runs of our model to tune hyperparameters. The followi
     - We saw that a learning rate of 0.01 improved test accuracy more than the default 0.1
     - However, after 15 epochs, there was no visible improvement on test accuracy nor was there a decrease on test loss
     - This could be a case of vanishing gradients
+ 
+3. Scheduler
+    - We eventually decided on an initial learning rate of 0.1 used alongside a step LR scheduler of 0.2 with a Plateau Scheduler with a patience of 7 epochs
+    - This led to a massive jump in test accuracy in the case of CIFAR-10 (4000) and CIFAR-100 (10000)
+    - A similar jump was not noticed for CIFAR-10(250) and CIFAR-100 (2500)
 
-    Scheduler
-        - We eventually decided on an initial learning rate of 0.1 used alongside a step LR scheduler of 0.2 with a Plateau Scheduler with a patience of 7 epochs
-        - This led to a massive jump in test accuracy in the case of CIFAR-10 (4000) and CIFAR-100 (10000)
-        - A similar jump was not noticed for CIFAR-10(250) and CIFAR-100 (2500)
-
-3. Optimizer
+4. Optimizer
     - In order to arrive at convergence faster, we used SGD with momentum as the optimizer
     - We stuck to the default momentum of 0.9
     - We reached very high rates of training accuracy (> 90%) within the first 5 epochs for CIFAR-10 and within 25 epochs for CIFAR-100
     - Perhaps a different optimizer like Adam or Adagrad would help avoid the vanishing gradient problem
-
 
 Sources:
 1. Wide ResNets - https://github.com/szagoruyko/wide-residual-networks
@@ -35,3 +34,4 @@ Sources:
 3. Example code - https://github.com/karpathy/minGPT
 4. FixMatch - https://github.com/google-research/fixmatch/blob/master/fixmatch.py
 5. RandAugment - https://github.com/ildoonet/pytorch-randaugment
+

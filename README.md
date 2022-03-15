@@ -1,4 +1,4 @@
-# NNTI computer vision project
+# Semi Supervised Learning on CIFAR-10 and CIFAR-100
 Name: Nirav Shenoy <br>
 MatrikelNummer: 7023854 <br>
 Email: nish00002@uni-saarland.de <br>
@@ -12,5 +12,4 @@ Please go through the project instructions given in the pdf file
 project-instructions.pdf along with this repository. If you submit a 
 downloadable link to your project repository, include the link in this
 README along with the md5 checksum.
-
 
