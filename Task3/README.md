@@ -34,4 +34,5 @@ Sources:
 3. Example code - https://github.com/karpathy/minGPT
 4. FixMatch - https://github.com/google-research/fixmatch/blob/master/fixmatch.py
 5. RandAugment - https://github.com/ildoonet/pytorch-randaugment
+6. ResNets - https://github.com/kuangliu/pytorch-cifar/tree/master/models
 
