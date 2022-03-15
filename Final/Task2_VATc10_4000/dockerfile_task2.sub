@@ -1,0 +1,15 @@
+universe 		= docker
+docker_image 	= dankazbek/nnti-2122-project:1.10.0
+executable              = main.py
+output                  = task2.$(ClusterId).$(ProcId).ckpt
+error                   = task2out.$(ClusterId).$(ProcId).err
+log                     = task2out.$(ClusterId).log
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+request_GPUs = 1
+request_CPUs = 1
+request_memory = 4G
+requirements = UidDomain == "cs.uni-saarland.de"
++WantGPUHomeMounted = true
+transfer_input_files = test.py,dataloader.py,test.py,utils.py,vat.py,model
+queue 1
