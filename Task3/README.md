@@ -33,6 +33,7 @@ Sources:
 2. ScienceDirect - https://www.sciencedirect.com/science/article/pii/S2405959519300694
 3. Example code - https://github.com/karpathy/minGPT
 4. FixMatch - https://github.com/google-research/fixmatch/blob/master/fixmatch.py
-5. RandAugment - https://github.com/ildoonet/pytorch-randaugment
-6. ResNets - https://github.com/kuangliu/pytorch-cifar/tree/master/models
+                https://github.com/LeeDoYup/FixMatch-pytorch
+6. RandAugment - https://github.com/ildoonet/pytorch-randaugment
+7. ResNets - https://github.com/kuangliu/pytorch-cifar/tree/master/models
 
