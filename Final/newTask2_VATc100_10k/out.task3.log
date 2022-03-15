@@ -1,0 +1,27 @@
+Tue, 15 Mar 2022 15:05:49 [INFO] - cifar100; Num Labeled = 10000; Epochs = 50; LR = 0.01; Momentum = 0.9; wd = 5e-05
+Tue, 15 Mar 2022 15:09:04 [INFO] - Epoch 1/50, Train Accuracy: 6.632, Test Accuracy: 12.900, Training Loss: 8.039, Test Loss: 4.003
+Tue, 15 Mar 2022 15:09:04 [INFO] - Saving model of epoch 1 with validation accuracy = 12.900 and loss = 4.003
+Tue, 15 Mar 2022 15:12:20 [INFO] - Epoch 2/50, Train Accuracy: 17.058, Test Accuracy: 18.600, Training Loss: 6.817, Test Loss: 3.548
+Tue, 15 Mar 2022 15:12:20 [INFO] - Saving model of epoch 2 with validation accuracy = 18.600 and loss = 3.548
+Tue, 15 Mar 2022 15:15:36 [INFO] - Epoch 3/50, Train Accuracy: 26.556, Test Accuracy: 27.200, Training Loss: 5.800, Test Loss: 3.063
+Tue, 15 Mar 2022 15:15:36 [INFO] - Saving model of epoch 3 with validation accuracy = 27.200 and loss = 3.063
+Tue, 15 Mar 2022 15:18:50 [INFO] - Epoch 4/50, Train Accuracy: 33.985, Test Accuracy: 33.200, Training Loss: 5.075, Test Loss: 2.829
+Tue, 15 Mar 2022 15:18:50 [INFO] - Saving model of epoch 4 with validation accuracy = 33.200 and loss = 2.829
+Tue, 15 Mar 2022 15:22:06 [INFO] - Epoch 5/50, Train Accuracy: 39.546, Test Accuracy: 35.100, Training Loss: 4.535, Test Loss: 2.602
+Tue, 15 Mar 2022 15:22:06 [INFO] - Saving model of epoch 5 with validation accuracy = 35.100 and loss = 2.602
+Tue, 15 Mar 2022 15:25:22 [INFO] - Epoch 6/50, Train Accuracy: 43.324, Test Accuracy: 38.300, Training Loss: 4.163, Test Loss: 2.483
+Tue, 15 Mar 2022 15:25:22 [INFO] - Saving model of epoch 6 with validation accuracy = 38.300 and loss = 2.483
+Tue, 15 Mar 2022 15:28:38 [INFO] - Epoch 7/50, Train Accuracy: 46.518, Test Accuracy: 39.200, Training Loss: 3.870, Test Loss: 2.538
+Tue, 15 Mar 2022 15:31:52 [INFO] - Epoch 8/50, Train Accuracy: 49.032, Test Accuracy: 39.300, Training Loss: 3.657, Test Loss: 2.502
+Tue, 15 Mar 2022 15:35:07 [INFO] - Epoch 9/50, Train Accuracy: 50.939, Test Accuracy: 41.500, Training Loss: 3.493, Test Loss: 2.422
+Tue, 15 Mar 2022 15:35:07 [INFO] - Saving model of epoch 9 with validation accuracy = 41.500 and loss = 2.422
+Tue, 15 Mar 2022 15:38:23 [INFO] - Epoch 10/50, Train Accuracy: 52.529, Test Accuracy: 39.600, Training Loss: 3.346, Test Loss: 2.504
+Tue, 15 Mar 2022 15:41:40 [INFO] - Epoch 11/50, Train Accuracy: 54.138, Test Accuracy: 43.400, Training Loss: 3.231, Test Loss: 2.381
+Tue, 15 Mar 2022 15:41:40 [INFO] - Saving model of epoch 11 with validation accuracy = 43.400 and loss = 2.381
+Tue, 15 Mar 2022 15:44:55 [INFO] - Epoch 12/50, Train Accuracy: 55.242, Test Accuracy: 42.500, Training Loss: 3.125, Test Loss: 2.374
+Tue, 15 Mar 2022 15:44:55 [INFO] - Saving model of epoch 12 with validation accuracy = 42.500 and loss = 2.374
+Tue, 15 Mar 2022 15:48:11 [INFO] - Epoch 13/50, Train Accuracy: 56.285, Test Accuracy: 42.900, Training Loss: 3.047, Test Loss: 2.390
+Tue, 15 Mar 2022 15:51:27 [INFO] - Epoch 14/50, Train Accuracy: 57.120, Test Accuracy: 42.700, Training Loss: 2.974, Test Loss: 2.439
+Tue, 15 Mar 2022 15:54:43 [INFO] - Epoch 15/50, Train Accuracy: 58.170, Test Accuracy: 41.600, Training Loss: 2.884, Test Loss: 2.438
+Tue, 15 Mar 2022 15:58:01 [INFO] - Epoch 16/50, Train Accuracy: 58.750, Test Accuracy: 42.800, Training Loss: 2.832, Test Loss: 2.372
+Tue, 15 Mar 2022 15:58:01 [INFO] - Saving model of epoch 16 with validation accuracy = 42.800 and loss = 2.372
