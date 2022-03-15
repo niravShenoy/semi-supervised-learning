@@ -1,0 +1,100 @@
+epoch:  1
+Epoch 1/50, Train Accuracy: 6.607, Test Accuracy: 11.500, Training Loss: 8.014, Test Loss: 3.932
+epoch:  2
+Epoch 2/50, Train Accuracy: 16.584, Test Accuracy: 21.000, Training Loss: 6.807, Test Loss: 3.520
+epoch:  3
+Epoch 3/50, Train Accuracy: 26.807, Test Accuracy: 26.800, Training Loss: 5.720, Test Loss: 3.053
+epoch:  4
+Epoch 4/50, Train Accuracy: 33.670, Test Accuracy: 33.100, Training Loss: 5.057, Test Loss: 2.835
+epoch:  5
+Epoch 5/50, Train Accuracy: 37.790, Test Accuracy: 34.800, Training Loss: 4.640, Test Loss: 2.739
+epoch:  6
+Epoch 6/50, Train Accuracy: 41.248, Test Accuracy: 38.000, Training Loss: 4.359, Test Loss: 2.622
+epoch:  7
+Epoch 7/50, Train Accuracy: 44.236, Test Accuracy: 36.400, Training Loss: 4.102, Test Loss: 2.629
+epoch:  8
+Epoch 8/50, Train Accuracy: 46.236, Test Accuracy: 38.000, Training Loss: 3.879, Test Loss: 2.613
+epoch:  9
+Epoch 9/50, Train Accuracy: 47.867, Test Accuracy: 38.800, Training Loss: 3.741, Test Loss: 2.610
+epoch:  10
+Epoch 10/50, Train Accuracy: 49.485, Test Accuracy: 38.600, Training Loss: 3.613, Test Loss: 2.590
+epoch:  11
+Epoch 11/50, Train Accuracy: 50.800, Test Accuracy: 39.800, Training Loss: 3.485, Test Loss: 2.655
+epoch:  12
+Epoch 12/50, Train Accuracy: 52.244, Test Accuracy: 40.700, Training Loss: 3.376, Test Loss: 2.586
+epoch:  13
+Epoch 13/50, Train Accuracy: 53.139, Test Accuracy: 40.400, Training Loss: 3.305, Test Loss: 2.591
+epoch:  14
+Epoch 14/50, Train Accuracy: 53.943, Test Accuracy: 41.900, Training Loss: 3.229, Test Loss: 2.596
+epoch:  15
+Epoch 15/50, Train Accuracy: 54.648, Test Accuracy: 39.100, Training Loss: 3.176, Test Loss: 2.673
+epoch:  16
+Epoch 16/50, Train Accuracy: 55.410, Test Accuracy: 40.600, Training Loss: 3.108, Test Loss: 2.538
+epoch:  17
+Epoch 17/50, Train Accuracy: 56.126, Test Accuracy: 41.500, Training Loss: 3.060, Test Loss: 2.581
+epoch:  18
+Epoch 18/50, Train Accuracy: 56.537, Test Accuracy: 39.100, Training Loss: 3.002, Test Loss: 2.870
+epoch:  19
+Epoch 19/50, Train Accuracy: 56.869, Test Accuracy: 42.900, Training Loss: 2.979, Test Loss: 2.422
+epoch:  20
+Epoch 20/50, Train Accuracy: 57.475, Test Accuracy: 40.800, Training Loss: 2.940, Test Loss: 2.680
+epoch:  21
+Epoch 21/50, Train Accuracy: 57.721, Test Accuracy: 43.000, Training Loss: 2.905, Test Loss: 2.494
+epoch:  22
+Epoch 22/50, Train Accuracy: 58.347, Test Accuracy: 42.400, Training Loss: 2.857, Test Loss: 2.561
+epoch:  23
+Epoch 23/50, Train Accuracy: 58.718, Test Accuracy: 42.400, Training Loss: 2.844, Test Loss: 2.596
+epoch:  24
+Epoch 24/50, Train Accuracy: 59.047, Test Accuracy: 42.700, Training Loss: 2.803, Test Loss: 2.596
+epoch:  25
+Epoch 25/50, Train Accuracy: 59.322, Test Accuracy: 44.600, Training Loss: 2.783, Test Loss: 2.542
+epoch:  26
+Epoch 26/50, Train Accuracy: 59.838, Test Accuracy: 42.300, Training Loss: 2.732, Test Loss: 2.660
+epoch:  27
+Epoch 27/50, Train Accuracy: 60.035, Test Accuracy: 43.300, Training Loss: 2.739, Test Loss: 2.512
+epoch:  28
+Epoch 28/50, Train Accuracy: 70.968, Test Accuracy: 47.300, Training Loss: 1.999, Test Loss: 2.416
+epoch:  29
+Epoch 29/50, Train Accuracy: 72.934, Test Accuracy: 45.600, Training Loss: 1.833, Test Loss: 2.484
+epoch:  30
+Epoch 30/50, Train Accuracy: 73.992, Test Accuracy: 46.700, Training Loss: 1.748, Test Loss: 2.591
+epoch:  31
+Epoch 31/50, Train Accuracy: 74.465, Test Accuracy: 45.200, Training Loss: 1.701, Test Loss: 2.645
+epoch:  32
+Epoch 32/50, Train Accuracy: 75.066, Test Accuracy: 45.900, Training Loss: 1.640, Test Loss: 2.687
+epoch:  33
+Epoch 33/50, Train Accuracy: 75.690, Test Accuracy: 44.400, Training Loss: 1.611, Test Loss: 2.686
+epoch:  34
+Epoch 34/50, Train Accuracy: 76.071, Test Accuracy: 45.500, Training Loss: 1.575, Test Loss: 2.658
+epoch:  35
+Epoch 35/50, Train Accuracy: 76.644, Test Accuracy: 45.400, Training Loss: 1.530, Test Loss: 2.753
+epoch:  36
+Epoch 36/50, Train Accuracy: 76.779, Test Accuracy: 45.000, Training Loss: 1.510, Test Loss: 2.698
+epoch:  37
+Epoch 37/50, Train Accuracy: 80.840, Test Accuracy: 45.900, Training Loss: 1.273, Test Loss: 2.681
+epoch:  38
+Epoch 38/50, Train Accuracy: 81.676, Test Accuracy: 46.200, Training Loss: 1.224, Test Loss: 2.760
+epoch:  39
+Epoch 39/50, Train Accuracy: 82.166, Test Accuracy: 47.000, Training Loss: 1.203, Test Loss: 2.716
+epoch:  40
+Epoch 40/50, Train Accuracy: 82.189, Test Accuracy: 46.900, Training Loss: 1.193, Test Loss: 2.734
+epoch:  41
+Epoch 41/50, Train Accuracy: 82.359, Test Accuracy: 45.400, Training Loss: 1.173, Test Loss: 2.851
+epoch:  42
+Epoch 42/50, Train Accuracy: 82.780, Test Accuracy: 45.500, Training Loss: 1.162, Test Loss: 2.810
+epoch:  43
+Epoch 43/50, Train Accuracy: 83.189, Test Accuracy: 47.900, Training Loss: 1.136, Test Loss: 2.748
+epoch:  44
+Epoch 44/50, Train Accuracy: 83.106, Test Accuracy: 45.200, Training Loss: 1.126, Test Loss: 2.861
+epoch:  45
+Epoch 45/50, Train Accuracy: 84.152, Test Accuracy: 45.700, Training Loss: 1.080, Test Loss: 2.827
+epoch:  46
+Epoch 46/50, Train Accuracy: 84.189, Test Accuracy: 45.100, Training Loss: 1.071, Test Loss: 2.835
+epoch:  47
+Epoch 47/50, Train Accuracy: 84.511, Test Accuracy: 45.700, Training Loss: 1.059, Test Loss: 2.785
+epoch:  48
+Epoch 48/50, Train Accuracy: 84.615, Test Accuracy: 45.200, Training Loss: 1.056, Test Loss: 2.840
+epoch:  49
+Epoch 49/50, Train Accuracy: 84.516, Test Accuracy: 45.400, Training Loss: 1.049, Test Loss: 2.866
+epoch:  50
+Epoch 50/50, Train Accuracy: 84.578, Test Accuracy: 45.500, Training Loss: 1.046, Test Loss: 2.853
