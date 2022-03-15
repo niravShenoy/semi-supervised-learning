@@ -35,5 +35,6 @@ Sources:
 2. ScienceDirect - https://www.sciencedirect.com/science/article/pii/S2405959519300694
 3. Example code - https://github.com/karpathy/minGPT
 4. PseudoLabel - https://github.com/iBelieveCJM/pseudo_label-pytorch
+5. ResNets - https://github.com/kuangliu/pytorch-cifar/tree/master/models
 
 
