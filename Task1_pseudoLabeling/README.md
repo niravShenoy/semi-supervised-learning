@@ -1,6 +1,9 @@
 Add instructions to reproduce your reported results.
 If necessary create a requirements.txt of libraries that you additionally use.
 
+Please find commented in main.py [L77] the code to evaluate the best models. Uncomment and run the file to evaluate.
+The arguments num-labeled and dataset of the model need to be changed based on the model to be tested
+
 Locally, we tried smaller runs of our model to tune hyperparameters. The following were some observations that we made
 
 1. Wide ResNet Architecture
@@ -25,3 +28,12 @@ Locally, we tried smaller runs of our model to tune hyperparameters. The followi
     - We stuck to the default momentum of 0.9
     - We reached very high rates of training accuracy (> 90%) within the first 5 epochs for CIFAR-10 and within 25 epochs for CIFAR-100
     - Perhaps a different optimizer like Adam or Adagrad would help avoid the vanishing gradient problem
+
+
+Sources:
+1. Wide ResNets - https://github.com/szagoruyko/wide-residual-networks
+2. ScienceDirect - https://www.sciencedirect.com/science/article/pii/S2405959519300694
+3. Example code - https://github.com/karpathy/minGPT
+4. PseudoLabel - https://github.com/iBelieveCJM/pseudo_label-pytorch
+
+
