@@ -30,8 +30,9 @@ def test_cifar10(args, device, testdataset, filepath = "./path/to/model.pth.tar"
     model = model.to(device)
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
-    evaluate_model(model, testdataset, criterion, device)
+    logits = evaluate_model(model, testdataset, criterion, device)
     top1, topk = find_model_accuracy(model, testdataset, device)
+    return logits
     # raise NotImplementedError
 
 def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar"):
@@ -55,8 +56,9 @@ def test_cifar100(args, device, testdataset, filepath="./path/to/model.pth.tar")
     model = model.to(device)
     _, model = load_checkpoint(filepath, model)
     criterion = nn.CrossEntropyLoss()
-    evaluate_model(model, testdataset, criterion, device)
+    logits = evaluate_model(model, testdataset, criterion, device)
     top1, topk = find_model_accuracy(model, testdataset, device)
+    return logits
     # raise NotImplementedError
 
 def load_checkpoint(ckpt_path, model):
@@ -69,6 +71,7 @@ def evaluate_model(model, test_loader, criterion, device):
         model.eval()
         test_loss = 0.0
         correct = 0.0
+        y_logits = []
         for j, (x_t, y_t) in enumerate(test_loader):
             x_t, y_t = x_t.to(device), y_t.to(device)
             y_op_test = model(x_t)
@@ -77,6 +80,7 @@ def evaluate_model(model, test_loader, criterion, device):
             test_loss += loss.item()
             _, y_pred_test = y_op_test.max(1)
             correct += y_pred_test.eq(y_t).sum()
+            y_logits.append(y_op_test)
 
         test_accuracy = 100 * correct.float() / len(test_loader.dataset)
         test_loss = test_loss / j
@@ -85,6 +89,8 @@ def evaluate_model(model, test_loader, criterion, device):
             test_accuracy, 
             test_loss
         )
+        print("Logits= ",y_logits)
+        return y_logits
 
 def save_checkpoint(checkpoint, best_path):
         logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',

@@ -4,12 +4,11 @@ import argparse
 import math
 import os
 import logging
-# import matplotlib.pyplot as plt
 import random
 
 from dataloader import get_cifar10, get_cifar100
 from utils import accuracy
-from test import test_cifar10, test_cifar100, load_checkpoint, save_checkpoint
+from test import test_cifar10, test_cifar100, load_checkpoint, save_checkpoint, find_model_accuracy
 
 from model.wrn import WideResNet
 
@@ -69,51 +68,16 @@ def main(args):
     init_path = os.path.join(curr_path, 'init_model.pt')
     torch.save(model.state_dict(), init_path)
 
-    # def save_checkpoint(checkpoint, best_path):
-    #     logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
-    #                  checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
-    #     torch.save(checkpoint, best_path)
-
-
-    # try:
-    #     # unlabeled data
-    #     x_ul_w, x_ul_s, _ = next(unlabeled_loader)
-    #     img_weak = x_ul_w.reshape(-1,3,32,32)
-    #     img_strong = x_ul_s.reshape(-1,3,32,32)
-    #     img_weak = torch.transpose(torch.transpose(img_weak, 1, 2), 2, 3)
-    #     img_strong = torch.transpose(torch.transpose(img_strong, 1, 2), 2, 3)
-    #     fig, axes1 = plt.subplots(5,5,figsize=(3,3))
-    #     fig1, axes2 = plt.subplots(5,5,figsize=(3,3))
-        
-    #     for j in range(5):
-    #         for k in range(5):
-    #             i = random.randint(0, img_weak.shape[0]-1)
-    #             axes1[j][k].set_axis_off()
-    #             axes1[j][k].imshow(img_weak[i:i+1][0])
-    #             axes2[j][k].set_axis_off()
-    #             axes2[j][k].imshow(img_strong[i:i+1][0])
-    #             fig.show()
-    #             fig1.show()
-    #             i += 1
-    # except StopIteration:
-    #     unlabeled_loader = iter(DataLoader(unlabeled_dataset,
-    #                                        batch_size=1,
-    #                                        shuffle=True,
-    #                                        num_workers=args.num_workers))
-    #     x_ul_w, x_ul_s, _ = next(unlabeled_loader)
-
-    # exit()
-
-    
-
-    # path = os.path.join(curr_path,'best_model','cifar10-250','best_model95.pt')
-    # top1, topk = find_model_accuracy(model, test_loader)
-    # exit()
-
     criterion = nn.CrossEntropyLoss()
 
-    # threshold_list = [0.6, 0.75, 0.95]
-    threshold_list = [0.6]
+    # Code to evaluate the best model
+   
+    # path = os.path.join(curr_path,'best_model','best_model-cifar10-4000.pt')
+    # logits = test_cifar10(args, device, test_loader, path)
+    # exit()
+    # top1, topk = find_model_accuracy(model, test_loader, device)
+    # print('top1={}, top5={}'.format(top1, topk))
+    # exit()
 
     threshold = 0.5
     threshold_int = (1-threshold)*10/args.epoch
@@ -121,19 +85,15 @@ def main(args):
     lambda_int = (1-lambda_u)*10/args.epoch
 
 
-    # for threshold in threshold_list:
     model.load_state_dict(torch.load(init_path))
     optimizer = optim.SGD(params=model.parameters(), lr=args.lr,
                             momentum=args.momentum, weight_decay=args.wd)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, factor=0.2, patience=7)
     best_loss = float('inf')
-    # best_path = os.path.join(
-    #     curr_path, 'best_model' + str(int(threshold*100)) + '.pt')
+
     best_path = os.path.join(
         curr_path, 'best_model.pt')
-    # logging.info('Model Parameters for threshold %s',
-    #                 threshold)
     loss_list = []
     for epoch in range(args.epoch):
         model.train()
@@ -257,13 +217,6 @@ def main(args):
 
     logging.info('Training Complete...')
 
-    # plt.plot(loss_list)
-    # loss_function = os.path.join(
-        # curr_path, 'loss' + str(int(threshold*100)) + '.png')
-    # plt.savefig(loss_function)
-    # plt.close()
-    # Model Evaluation
-    # logging.info('Evalutating Model for Threshold = %s', threshold)
     if args.dataset == "cifar10":
         test_cifar10(args, device, test_loader, best_path)
     elif args.dataset == "cifar100":

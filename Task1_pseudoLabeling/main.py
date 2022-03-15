@@ -4,13 +4,12 @@ import argparse
 import math
 import os
 import logging
-# import matplotlib.pyplot as plt
 from torch.utils.data import random_split
 
 from dataloader import get_cifar10, get_cifar100
 from test import test_cifar10, test_cifar100
 from utils import accuracy
-from test import test_cifar10, test_cifar100, load_checkpoint, save_checkpoint
+from test import test_cifar10, test_cifar100, load_checkpoint, save_checkpoint,  find_model_accuracy
 
 from model.wrn import WideResNet
 
@@ -73,36 +72,19 @@ def main(args):
     init_path = os.path.join(curr_path, 'init_model.pt')
     torch.save(model.state_dict(), init_path)
 
-    # def save_checkpoint(checkpoint, best_path):
-    #     logging.info('Saving model of epoch %s with validation accuracy = %.3f and loss = %.3f',
-    #                  checkpoint['epoch'], checkpoint['validation_accuracy'], checkpoint['validation_loss'])
-    #     torch.save(checkpoint, best_path)
-
     criterion = nn.CrossEntropyLoss()
 
-    # def find_model_accuracy(model, test_loader):
-    #     _, model = load_checkpoint(path, model)
-    #     with torch.no_grad():
-    #         model.eval()
+    # Code to evaluate the best model
 
-    #         test_accuracy = torch.empty((0,2))
-    #         for j, (x_v, y_v) in enumerate(test_loader):
-    #             x_v, y_v = x_v.to(device), y_v.to(device)
-    #             y_op_val = model(x_v)
-    #             res = accuracy(y_op_val, y_v, (1,5))
-    #             res = torch.FloatTensor(res).reshape(1,2)
-    #             test_accuracy = torch.cat((test_accuracy, res),0)
-    #             # loss = criterion(y_op_val, y_v)
-    #         top1, topk = enumerate(torch.div(torch.sum(test_accuracy, dim=0),test_accuracy.shape[0]))
-    #         print(top1, topk)
-    #         return top1, topk
-
-    # path = os.path.join(curr_path,'best_model','cifar10-250','best_model95.pt')
-    # top1, topk = find_model_accuracy(model, test_loader)
+    # path = os.path.join(curr_path,'best_model','cifar10-4000','best_model95.pt')
+    # logits = test_cifar10(args, device, test_loader, path)
     # exit()
+    # top1, topk = find_model_accuracy(model, test_loader, device)
+    # print('top1={}, top5={}'.format(top1, topk))
+    # exit()
+    
 
     threshold_list = [0.6, 0.75, 0.95]
-    #threshold_list = [0.75, 0.95]
 
     for threshold in threshold_list:
         model.load_state_dict(torch.load(init_path))
@@ -261,7 +243,7 @@ if __name__ == "__main__":
                         default=4000, help='Total number of labeled samples')
     parser.add_argument("--lr", default=0.1, type=float,
                         help="The initial learning rate")
-    # parser.add_argument("--lr", default=0.1, type=float,
+    # parser.add_argument("--lr", default=0.01, type=float,
     #                     help="The initial learning rate")
     parser.add_argument("--momentum", default=0.9, type=float,
                         help="Optimizer momentum")
