@@ -15,3 +15,6 @@ Sources:
 3. Example code - https://github.com/karpathy/minGPT
 4. PseudoLabel - https://github.com/iBelieveCJM/pseudo_label-pytorch
 5. ResNets - https://github.com/kuangliu/pytorch-cifar/tree/master/models
+6. FixMatch - https://github.com/google-research/fixmatch/blob/master/fixmatch.py
+                https://github.com/LeeDoYup/FixMatch-pytorch
+6. RandAugment - https://github.com/ildoonet/pytorch-randaugment
