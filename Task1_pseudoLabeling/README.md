@@ -1,6 +1,3 @@
-Add instructions to reproduce your reported results.
-If necessary create a requirements.txt of libraries that you additionally use.
-
 Please find commented in main.py [L77] the code to evaluate the best models. Uncomment and run the file to evaluate.
 The arguments num-labeled and dataset of the model need to be changed based on the model to be tested
 
