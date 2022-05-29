@@ -1,31 +1,13 @@
-Please find commented in main.py [L77] the code to evaluate the best models. Uncomment and run the file to evaluate.
-The arguments num-labeled and dataset of the model need to be changed based on the model to be tested
+An implementation of Semi-supervised Image Classification on the CIFAR10 and CIFAR100 datasets to show the scalability of deep neural networks in the absence of large datasets of labeled data. Deep Neural Networks that are able to classify on sparsely labeled datasets would significantly reduce the amount of manpower spent in collecting vast amounts of data and labeling them for training. The concept behind Semi-supervised Leanring is to develop strategies to simultaneously learn from labeled and unlabeled data.
 
-Locally, we tried smaller runs of our model to tune hyperparameters. The following were some observations that we made
+This project implements 3 common techniques for SSL:
+1. Pseudo-label - Dong-Hyun Lee et al.
+2. Virtual adversarial training - Takeru Miyato et al.
+3. A modification of Fixmatch - Kihyuk Sohn et al.
 
-1. Wide ResNet Architecture
-    - We alternated between the WRN-28-2 (default) and the 16-8 architecture
-    - It was noticed that the 16-8 architecture converged faster on training data than the 28-2
-    - However, performance on test data while better was not as significant
-    - The test loss and test accuracy seemed to stagnate after the first 15 epochs in CIFAR-10 (4000 unlabeled samples)
-    - A similar stagnation was observed for all threshold values as well as the 250 unlabeled sample variation of the Pseudo-label
+Each technique is implemented on CIFAR10 and CIFAR100 datasets with different proportions of labeled samples. For CIFAR10 which contains 5000 training images and 1000 test images, we have implemented two models. The first model contains 4000 labeled samples and 1000 unlabeled samples. The second model contains just 250 labeled samples and 4750 unlabeled samples. The difference in model performance on sparsely labeled data vs mostly labeled data will allow us to guage the extent of a deep neural network in learning from unlabeled data. Similarly, for CIFAR100 which contains 50000 training images and 10000 test images, we train models based on 2500 and 10000 labeled samples.
 
-2. Learning Rate
-    - We saw that a learning rate of 0.01 improved test accuracy more than the default 0.1
-    - However, after 15 epochs, there was no visible improvement on test accuracy nor was there a decrease on test loss
-    - This could be a case of vanishing gradients
-
-    Scheduler
-        - We eventually decided on an initial learning rate of 0.1 used alongside a step LR scheduler of 0.2 with a Plateau Scheduler with a patience of 7 epochs
-        - This led to a massive jump in test accuracy in the case of CIFAR-10 (4000) and CIFAR-100 (10000)
-        - A similar jump was not noticed for CIFAR-10(250) and CIFAR-100 (2500)
-
-3. Optimizer
-    - In order to arrive at convergence faster, we used SGD with momentum as the optimizer
-    - We stuck to the default momentum of 0.9
-    - We reached very high rates of training accuracy (> 90%) within the first 5 epochs for CIFAR-10 and within 25 epochs for CIFAR-100
-    - Perhaps a different optimizer like Adam or Adagrad would help avoid the vanishing gradient problem
-
+The model is implemented using a Wide Residual Network either using a 28-2 or 16-8 architecture using different threshold values during training to come up with the most efficient threshold values to learn from sparsely labeled data.
 
 Sources:
 1. Wide ResNets - https://github.com/szagoruyko/wide-residual-networks
