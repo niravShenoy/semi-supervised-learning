@@ -1,3 +1,5 @@
+# Semi-Supervised Classification on CIFAR
+
 An implementation of Semi-supervised Image Classification on the CIFAR10 and CIFAR100 datasets to show the scalability of deep neural networks in the absence of large datasets of labeled data. Deep Neural Networks that are able to classify on sparsely labeled datasets would significantly reduce the amount of manpower spent in collecting vast amounts of data and labeling them for training. The concept behind Semi-supervised Leanring is to develop strategies to simultaneously learn from labeled and unlabeled data.
 
 This project implements 3 common techniques for SSL:
