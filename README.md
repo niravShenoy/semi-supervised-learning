@@ -1,19 +1,35 @@
-# Semi Supervised Learning on CIFAR-10 and CIFAR-100
-Name: Nirav Shenoy <br>
-MatrikelNummer: 7023854 <br>
-Email: nish00002@uni-saarland.de <br>
-  
-Name: Madukkolil Geo James <br>
-MatrikelNummer: 7008978 <br>
-Email: maja00001@uni-saarland.de <br>
+Please find commented in main.py [L77] the code to evaluate the best models. Uncomment and run the file to evaluate.
+The arguments num-labeled and dataset of the model need to be changed based on the model to be tested
 
-Submit the project report with this repository.
-Please go through the project instructions given in the pdf file
-project-instructions.pdf along with this repository. If you submit a 
-downloadable link to your project repository, include the link in this
-README along with the md5 checksum.
+Locally, we tried smaller runs of our model to tune hyperparameters. The following were some observations that we made
 
-1. Please find the best models for each threshold value and variation of the training data in the folder "best_model" under each Task directory
-  - These models can be loaded using the commented code in "main.py" of each task which in turn calls "test.py" and returns the logits along with model performance on the datasets. The process to evaluate the best models is described in the README of each task. 
-2. The folder "logs" contain the training and validation performance of the model in each epoch along with the associated graphs
+1. Wide ResNet Architecture
+    - We alternated between the WRN-28-2 (default) and the 16-8 architecture
+    - It was noticed that the 16-8 architecture converged faster on training data than the 28-2
+    - However, performance on test data while better was not as significant
+    - The test loss and test accuracy seemed to stagnate after the first 15 epochs in CIFAR-10 (4000 unlabeled samples)
+    - A similar stagnation was observed for all threshold values as well as the 250 unlabeled sample variation of the Pseudo-label
 
+2. Learning Rate
+    - We saw that a learning rate of 0.01 improved test accuracy more than the default 0.1
+    - However, after 15 epochs, there was no visible improvement on test accuracy nor was there a decrease on test loss
+    - This could be a case of vanishing gradients
+
+    Scheduler
+        - We eventually decided on an initial learning rate of 0.1 used alongside a step LR scheduler of 0.2 with a Plateau Scheduler with a patience of 7 epochs
+        - This led to a massive jump in test accuracy in the case of CIFAR-10 (4000) and CIFAR-100 (10000)
+        - A similar jump was not noticed for CIFAR-10(250) and CIFAR-100 (2500)
+
+3. Optimizer
+    - In order to arrive at convergence faster, we used SGD with momentum as the optimizer
+    - We stuck to the default momentum of 0.9
+    - We reached very high rates of training accuracy (> 90%) within the first 5 epochs for CIFAR-10 and within 25 epochs for CIFAR-100
+    - Perhaps a different optimizer like Adam or Adagrad would help avoid the vanishing gradient problem
+
+
+Sources:
+1. Wide ResNets - https://github.com/szagoruyko/wide-residual-networks
+2. ScienceDirect - https://www.sciencedirect.com/science/article/pii/S2405959519300694
+3. Example code - https://github.com/karpathy/minGPT
+4. PseudoLabel - https://github.com/iBelieveCJM/pseudo_label-pytorch
+5. ResNets - https://github.com/kuangliu/pytorch-cifar/tree/master/models
